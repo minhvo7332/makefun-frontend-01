@@ -4,9 +4,14 @@
 
 import { get, apiImage } from './api.js';
 import { esc } from './format.js';
-import { pct } from './format2.js';
+import { pct, cssOnce, tableCss, hideBrokenImages } from './format2.js';
+
+/** The entrant column: avatar, handle and title, with a win-rate bar. */
+const whoCss = `.who{display:flex;align-items:center;gap:9px;min-width:0}.who img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--wash);flex:none}.who .nick{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.who small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}td .bar{display:block;height:5px;background:var(--line);border-radius:3px;margin-top:4px;overflow:hidden}td .bar i{display:block;height:100%;background:var(--accent)}`;
 
 export async function leaderboardPage(app, slug) {
+  cssOnce('tables', tableCss);
+  cssOnce('who', whoCss);
   app.innerHTML = '<p class="empty">Loading leaderboard…</p>';
   const data = await get(`/competitions/${encodeURIComponent(slug)}/leaderboard`);
   const entries = data.entries ?? [];
@@ -23,18 +28,22 @@ export async function leaderboardPage(app, slug) {
       <thead><tr><th>#</th><th>Entrant</th><th class="num">Win rate</th><th class="num">Interval</th><th class="num">Size</th><th class="num">Games</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
-    <p class="count" id="count"></p>`;
+    <p class="count" id="count"></p>
+    <div id="more"></div>`;
 
   const q = document.getElementById('q');
   const rowsEl = document.getElementById('rows');
   const countEl = document.getElementById('count');
+  const moreEl = document.getElementById('more');
+  let shown = 50;
   function paint() {
     const needle = q.value.trim().toLowerCase();
     const list = entries.filter(
       (e) => !needle || `${e.handle} ${e.title}`.toLowerCase().includes(needle),
     );
+    const page = list.slice(0, shown);
     rowsEl.innerHTML =
-      list
+      page
         .map((e) => {
           const img = e.image
             ? `<img src="${esc(apiImage(e.image))}" alt="" crossorigin="anonymous" loading="lazy">`
@@ -52,12 +61,26 @@ export async function leaderboardPage(app, slug) {
         </tr>`;
         })
         .join('') || '<tr><td colspan="6" class="empty">No entries match.</td></tr>';
-    countEl.textContent = `${list.length} of ${entries.length} entries shown`;
+    hideBrokenImages(rowsEl);
+    countEl.textContent = `${page.length} of ${list.length} entries shown`;
+    if (list.length > shown) {
+      const rest = list.length - shown;
+      moreEl.innerHTML = `<button class="more" id="show-more">Show ${Math.min(50, rest)} more (${rest} remaining)</button>`;
+      document.getElementById('show-more').addEventListener('click', () => {
+        shown += 50;
+        paint();
+      });
+    } else {
+      moreEl.innerHTML = '';
+    }
   }
   let timer = 0;
   q.addEventListener('input', () => {
     clearTimeout(timer);
-    timer = setTimeout(paint, 120);
+    timer = setTimeout(() => {
+      shown = 50;
+      paint();
+    }, 120);
   });
   paint();
 }

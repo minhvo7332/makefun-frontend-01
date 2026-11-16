@@ -45,23 +45,15 @@ export async function get(path) {
   }
 }
 
-export async function getPages(path) {
-  const items = [];
-  let url = path;
-  for (;;) {
-    const page = await get(url);
-    items.push(...(page.items ?? []));
-    if (!page.next_cursor) return items;
-    const sep = url.includes('?') ? '&' : '?';
-    url = `${path}${sep}cursor=${encodeURIComponent(page.next_cursor)}`;
-  }
-}
-
 export function bust(path) {
   cache.delete(path);
 }
 
-/** An API-relative image path (avatars) as an absolute make.fun URL. */
+/** An API image path as an absolute URL: API-relative paths are joined to the
+    API's origin, absolute URLs (a GitHub avatar, say) pass through untouched. */
 export function apiImage(path) {
-  return path ? API.replace('/api', '') + path : '';
+  if (!path) return '';
+  if (/^https?:\/\//.test(path)) return path;
+  if (path.startsWith('//')) return `https:${path}`;
+  return API.replace('/api', '') + path;
 }

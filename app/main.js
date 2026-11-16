@@ -1,5 +1,5 @@
-// The router and the bounty board (the first load). The other views load on
-// demand with a literal import(), so they never enter the first-load bytes.
+// The router and the bounty board (the first load). The other three views load
+// on demand with a literal import(), so they never enter the first-load bytes.
 // window.__shotReady is false while a page loads and true once its data is on
 // screen, so a screenshot script knows when to capture.
 
@@ -17,6 +17,23 @@ function renderNet() {
 }
 onStats(renderNet);
 renderNet();
+
+/** The four surfaces, each with its own route: the board (#/), a bounty
+    (#/bounty/<slug>), its leaderboard (#/bounty/<slug>/leaderboard) and an
+    account's profile (#/u/<handle>). Only the board ships with the first load;
+    the other three load on demand. */
+async function bountyView(el, slug) {
+  const { bountyPage } = await import('./bounty.js');
+  await bountyPage(el, slug);
+}
+async function leaderboardView(el, slug) {
+  const { leaderboardPage } = await import('./leaderboard.js');
+  await leaderboardPage(el, slug);
+}
+async function profileView(el, handle) {
+  const { profilePage } = await import('./profile.js');
+  await profilePage(el, handle);
+}
 
 /** A bounty is open when its deadline is still ahead and its status says open. */
 export function isOpen(b) {
@@ -83,9 +100,9 @@ function paintRows() {
   }
 }
 
-async function board() {
+async function boardView(el) {
   document.title = 'make.fun bounties — live board';
-  app.innerHTML = `<h1>Open bounties</h1>
+  el.innerHTML = `<h1>Open bounties</h1>
     <p class="lede">Every live bounty on make.fun, with its reward as it stands now — the prize plus the entry fees paid into it. Press <kbd>/</kbd> to search.</p>
     <div class="controls">
       <input id="q" class="search" type="search" placeholder="Search bounties, categories, skills…" aria-label="Search bounties" value="${esc(state.q)}">
@@ -183,6 +200,15 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+/** A bounty beside its board: the list on the left, the bounty on the right. */
+async function splitView(slug) {
+  app.innerHTML = '<div class="split"><aside class="pane-board" id="board-pane"></aside><section class="pane-detail" id="detail-pane"></section></div>';
+  await Promise.all([
+    boardView(document.getElementById('board-pane')),
+    bountyView(document.getElementById('detail-pane'), slug),
+  ]);
+}
+
 async function render() {
   window.__shotReady = false;
   const hash = location.hash || '#/';
@@ -191,16 +217,13 @@ async function render() {
     const single = hash.match(/^#\/bounty\/([^/]+)$/);
     const profile = hash.match(/^#\/u\/([^/]+)$/);
     if (bounty) {
-      const { leaderboardPage } = await import('./leaderboard.js');
-      await leaderboardPage(app, decodeURIComponent(bounty[1]));
+      await leaderboardView(app, decodeURIComponent(bounty[1]));
     } else if (single) {
-      const { bountyPage } = await import('./bounty.js');
-      await bountyPage(app, decodeURIComponent(single[1]));
+      await splitView(decodeURIComponent(single[1]));
     } else if (profile) {
-      const { profilePage } = await import('./profile.js');
-      await profilePage(app, decodeURIComponent(profile[1]));
+      await profileView(app, decodeURIComponent(profile[1]));
     } else {
-      await board();
+      await boardView(app);
     }
   } catch (err) {
     app.innerHTML = `<p class="error">Something went wrong: ${esc(err.message)}</p><p><a href="#/">Back to the board</a></p>`;

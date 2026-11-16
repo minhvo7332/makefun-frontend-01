@@ -134,35 +134,11 @@ h2 { font-size: 19px; margin: 28px 0 10px; letter-spacing: -0.01em; }
 }
 .more:hover { border-color: var(--accent); color: var(--accent); }
 
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
-.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
-.stat span { display: block; font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.stat b { font-size: 21px; letter-spacing: -0.02em; }
-.stat b.green { color: var(--good); }
-.stat small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
+/* Two panes on a bounty page: the board beside the bounty. On a phone they stack. */
+.split { display: grid; grid-template-columns: 350px minmax(0, 1fr); gap: 18px; align-items: start; }
+.pane-board h1 { font-size: 19px; }
+.pane-board .lede { display: none; }
 
-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14.5px; }
-th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); }
-th { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); background: var(--wash); }
-tr:last-child td { border-bottom: none; }
-td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-td .bar { display: block; height: 5px; background: var(--line); border-radius: 3px; margin-top: 4px; overflow: hidden; }
-td .bar i { display: block; height: 100%; background: var(--accent); }
-.who { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.who img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--wash); flex: none; }
-.who .nick { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.who small { display: block; color: var(--muted); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.profile { display: flex; gap: 16px; align-items: flex-start; }
-.profile img.avatar { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; background: var(--wash); flex: none; }
-.profile .initials {
-  width: 88px; height: 88px; border-radius: 50%; flex: none;
-  display: grid; place-items: center;
-  background: var(--accent); color: #fff; font-size: 32px; font-weight: 700;
-}
-.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-.links a { font-size: 13.5px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; background: var(--card); }
-.bio { color: var(--muted); max-width: 72ch; }
 .empty { color: var(--muted); padding: 28px 0; text-align: center; }
 .error { background: #fbe7e5; border: 1px solid #f0b6b1; color: var(--bad); border-radius: var(--radius); padding: 14px 16px; }
 .foot {
@@ -179,7 +155,7 @@ td .bar i { display: block; height: 100%; background: var(--accent); }
 .foot span:first-child { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 720px) {
-  .stats { grid-template-columns: repeat(2, 1fr); }
+  .split { grid-template-columns: 1fr; }
   .row { grid-template-columns: 1fr; }
   .pot { text-align: left; }
   .pot b { display: inline; font-size: 17px; margin-right: 8px; }
@@ -187,7 +163,4 @@ td .bar i { display: block; height: 100%; background: var(--accent); }
   .top nav { margin-left: 0; }
   main { padding-top: 14px; }
   h1 { font-size: 22px; }
-  table { font-size: 13.5px; }
-  th, td { padding: 8px; }
-  .profile { flex-direction: column; }
 }

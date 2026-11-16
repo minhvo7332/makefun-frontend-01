@@ -70,3 +70,33 @@ export function md(src) {
   closeList();
   return out;
 }
+
+/** Drop images that fail to load (a dead avatar URL) instead of showing a
+    broken frame; images that load are untouched. */
+export function hideBrokenImages(root) {
+  for (const img of root.querySelectorAll('img')) {
+    if (img.complete && img.naturalWidth === 0) img.remove();
+    else img.addEventListener('error', () => img.remove());
+  }
+}
+
+// --- Styles the lazy views bring with them ---------------------------------
+// The shared stylesheet stays small by keeping view-only rules out of the
+// first load: each lazy view injects the CSS it needs, once, as an inline
+// <style> of its own text. Nothing here comes from another origin.
+
+const injected = new Set();
+/** Inject a stylesheet once, by key, from the view's own text. */
+export function cssOnce(key, text) {
+  if (injected.has(key)) return;
+  injected.add(key);
+  const s = document.createElement('style');
+  s.textContent = text;
+  document.head.appendChild(s);
+}
+
+/** Tables (rewards, leaderboard, entries, payouts), with a phone layout. */
+export const tableCss = `table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14.5px}th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}th{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--wash)}tr:last-child td{border-bottom:none}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}@media(max-width:720px){table{display:block;max-width:100%;overflow-x:auto;font-size:13.5px}th,td{padding:8px}}`;
+
+/** The four stat cards on bounty and profile pages. */
+export const statsCss = `.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}.stat span{display:block;font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.stat b{font-size:21px;letter-spacing:-.02em}.stat b.green{color:var(--good)}.stat small{display:block;color:var(--muted);font-size:13px;font-weight:400}@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}`;

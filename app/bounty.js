@@ -4,7 +4,7 @@
 
 import { get } from './api.js';
 import { esc, money, timeLeft } from './format.js';
-import { usd, date, md } from './format2.js';
+import { usd, date, md, cssOnce, tableCss, statsCss } from './format2.js';
 import { pot, isOpen } from './main.js';
 
 function rewardsTable(b) {
@@ -25,6 +25,8 @@ function rewardsTable(b) {
 }
 
 export async function bountyPage(app, slug) {
+  cssOnce('tables', tableCss);
+  cssOnce('stats', statsCss);
   app.innerHTML = '<p class="empty">Loading bounty…</p>';
   const b = await get(`/competitions/${encodeURIComponent(slug)}`);
   document.title = `${b.title} | make.fun bounties`;

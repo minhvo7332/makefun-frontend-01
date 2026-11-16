@@ -3,9 +3,15 @@
 
 import { get, apiImage } from './api.js';
 import { esc, money } from './format.js';
-import { date, num } from './format2.js';
+import { date, num, cssOnce, tableCss, statsCss, hideBrokenImages } from './format2.js';
+
+/** The profile header, links and bio. */
+const profileCss = `.profile{display:flex;gap:16px;align-items:flex-start}.profile img.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;background:var(--wash);flex:none}.profile .initials{width:88px;height:88px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:32px;font-weight:700}.links{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.links a{font-size:13.5px;border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--card)}.bio{color:var(--muted);max-width:72ch}@media(max-width:720px){.profile{flex-direction:column}}`;
 
 export async function profilePage(app, handle) {
+  cssOnce('tables', tableCss);
+  cssOnce('stats', statsCss);
+  cssOnce('profile', profileCss);
   app.innerHTML = '<p class="empty">Loading profile…</p>';
   const p = await get(`/profiles/${encodeURIComponent(handle)}`);
   document.title = `${p.handle} | make.fun bounties`;
@@ -59,4 +65,5 @@ export async function profilePage(app, handle) {
     ${solutions ? `<table><thead><tr><th>Bounty</th><th class="num">Place</th><th class="num">Prize</th><th class="num">Entered</th></tr></thead><tbody>${solutions}</tbody></table>` : '<p class="empty">No entries yet.</p>'}
     <h2>Payouts (${(p.payouts ?? []).length})</h2>
     ${payouts ? `<table><thead><tr><th>Bounty</th><th class="num">Place</th><th class="num">Amount</th><th class="num">Paid</th></tr></thead><tbody>${payouts}</tbody></table>` : '<p class="empty">No payouts yet.</p>'}`;
+  hideBrokenImages(app);
 }
